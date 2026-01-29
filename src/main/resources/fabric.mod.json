@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "noticeexpress",
+	"version": "${version}",
+	"name": "NoticeExpress",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/noticeexpress/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"top.orderly.noticeexpress.NoticeExpress"
+		],
+		"client": [
+			"top.orderly.noticeexpress.NoticeExpressClient"
+		]
+	},
+	"mixins": [
+		"noticeexpress.mixins.json",
+		{
+			"config": "noticeexpress.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.7",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

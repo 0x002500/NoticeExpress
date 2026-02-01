@@ -1,9 +1,11 @@
 package top.orderly.noticeexpress;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.orderly.noticeexpress.command.NoticeCommand;
 import top.orderly.noticeexpress.config.ModConfig;
 import top.orderly.noticeexpress.database.DatabaseManager;
 import top.orderly.noticeexpress.database.NoticeRepository;
@@ -41,6 +43,9 @@ public class NoticeExpress implements ModInitializer {
 
 		// Initialize repository
 		noticeRepository = new NoticeRepository(databaseManager);
+
+		// Register commands
+		CommandRegistrationCallback.EVENT.register(NoticeCommand::register);
 
 		LOGGER.info("NoticeExpress initialized successfully!");
 	}

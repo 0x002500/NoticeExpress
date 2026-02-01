@@ -1,6 +1,7 @@
 package top.orderly.noticeexpress.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandRegistryAccess;
@@ -25,16 +26,17 @@ public class NoticeCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         dispatcher.register(CommandManager.literal("notice")
                 .then(CommandManager.literal("publish")
-                        .then(CommandManager.argument("content", StringArgumentType.greedyString())
-                                .executes(NoticeCommand::publishNotice)))
+                        .then(CommandManager.argument("title", StringArgumentType.string())
+                                .then(CommandManager.argument("content", StringArgumentType.greedyString())
+                                        .executes(NoticeCommand::publishNotice))))
                 .then(CommandManager.literal("delete")
-                        .then(CommandManager.argument("id", StringArgumentType.string())
+                        .then(CommandManager.argument("id", IntegerArgumentType.integer(1))
                                 .executes(NoticeCommand::deleteNotice)))
                 .then(CommandManager.literal("pin")
-                        .then(CommandManager.argument("id", StringArgumentType.string())
+                        .then(CommandManager.argument("id", IntegerArgumentType.integer(1))
                                 .executes(NoticeCommand::pinNotice)))
                 .then(CommandManager.literal("unpin")
-                        .then(CommandManager.argument("id", StringArgumentType.string())
+                        .then(CommandManager.argument("id", IntegerArgumentType.integer(1))
                                 .executes(NoticeCommand::unpinNotice)))
                 .then(CommandManager.literal("list")
                         .executes(NoticeCommand::listNotices))
@@ -50,23 +52,25 @@ public class NoticeCommand {
             return 0;
         }
 
+        String title = StringArgumentType.getString(context, "title");
         String content = StringArgumentType.getString(context, "content");
         String publisher = source.getName();
         UUID publisherUuid = source.getPlayer() != null ? source.getPlayer().getUuid() : UUID.randomUUID();
 
         Notice notice = new Notice();
+        notice.setTitle(title);
         notice.setPublisher(publisher);
         notice.setPublisherUuid(publisherUuid);
         notice.setContent(content);
 
         NoticeRepository repository = NoticeExpress.getNoticeRepository();
         if (repository.createNotice(notice)) {
-            source.sendFeedback(() -> Text.literal("Notice published successfully!").formatted(Formatting.GREEN), true);
+            source.sendFeedback(() -> Text.literal("Notice published successfully! ID: " + notice.getId()).formatted(Formatting.GREEN), true);
             
             // Broadcast to all players
             if (source.getServer() != null) {
                 source.getServer().getPlayerManager().broadcast(
-                        Text.literal("New notice from " + publisher + "!").formatted(Formatting.YELLOW), false);
+                        Text.literal("New notice from " + publisher + ": " + title).formatted(Formatting.YELLOW), false);
             }
             
             return 1;
@@ -84,15 +88,7 @@ public class NoticeCommand {
             return 0;
         }
 
-        String idString = StringArgumentType.getString(context, "id");
-        UUID id;
-
-        try {
-            id = UUID.fromString(idString);
-        } catch (IllegalArgumentException e) {
-            source.sendError(Text.literal("Invalid notice ID format.").formatted(Formatting.RED));
-            return 0;
-        }
+        int id = IntegerArgumentType.getInteger(context, "id");
 
         NoticeRepository repository = NoticeExpress.getNoticeRepository();
         if (repository.deleteNotice(id)) {
@@ -112,15 +108,7 @@ public class NoticeCommand {
             return 0;
         }
 
-        String idString = StringArgumentType.getString(context, "id");
-        UUID id;
-
-        try {
-            id = UUID.fromString(idString);
-        } catch (IllegalArgumentException e) {
-            source.sendError(Text.literal("Invalid notice ID format.").formatted(Formatting.RED));
-            return 0;
-        }
+        int id = IntegerArgumentType.getInteger(context, "id");
 
         NoticeRepository repository = NoticeExpress.getNoticeRepository();
         if (repository.pinNotice(id)) {
@@ -140,15 +128,7 @@ public class NoticeCommand {
             return 0;
         }
 
-        String idString = StringArgumentType.getString(context, "id");
-        UUID id;
-
-        try {
-            id = UUID.fromString(idString);
-        } catch (IllegalArgumentException e) {
-            source.sendError(Text.literal("Invalid notice ID format.").formatted(Formatting.RED));
-            return 0;
-        }
+        int id = IntegerArgumentType.getInteger(context, "id");
 
         NoticeRepository repository = NoticeExpress.getNoticeRepository();
         if (repository.unpinNotice(id)) {

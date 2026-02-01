@@ -71,7 +71,8 @@ public class DatabaseManager {
     private void createTables() throws SQLException {
         String createNoticesTable = """
                 CREATE TABLE IF NOT EXISTS notices (
-                    id TEXT PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
                     publisher TEXT NOT NULL,
                     publisher_uuid TEXT NOT NULL,
                     content TEXT NOT NULL,

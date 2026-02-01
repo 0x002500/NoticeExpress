@@ -17,6 +17,7 @@ public class ChatNotificationFormatter {
     /**
      * Formats a notice as chat text.
      * Format: [Publisher] [YYYY/MM/DD HH:mm] [Pinned]
+     *         Title
      *         Content (multi-line)
      */
     public static Text formatNotice(Notice notice) {
@@ -35,10 +36,13 @@ public class ChatNotificationFormatter {
                     .append(Text.literal("]").formatted(Formatting.GRAY));
         }
 
+        MutableText title = Text.literal("\n")
+                .append(Text.literal(notice.getTitle()).formatted(Formatting.GOLD, Formatting.BOLD));
+
         MutableText content = Text.literal("\n")
                 .append(Text.literal(notice.getContent()).formatted(Formatting.WHITE));
 
-        return header.append(content);
+        return header.append(title).append(content);
     }
 
     /**
@@ -46,14 +50,11 @@ public class ChatNotificationFormatter {
      */
     public static Text formatNoticeListItem(Notice notice, int index) {
         String timestamp = formatTimestamp(notice.getTimestamp());
-        String preview = notice.getContent().length() > 30
-                ? notice.getContent().substring(0, 30) + "..."
-                : notice.getContent();
-
+        
         MutableText text = Text.literal(String.format("%d. ", index))
                 .formatted(Formatting.GRAY)
                 .append(Text.literal("[" + notice.getPublisher() + "] ").formatted(Formatting.YELLOW))
-                .append(Text.literal(preview).formatted(Formatting.WHITE));
+                .append(Text.literal(notice.getTitle()).formatted(Formatting.GOLD));
 
         if (notice.isPinned()) {
             text.append(Text.literal(" [PINNED]").formatted(Formatting.RED));

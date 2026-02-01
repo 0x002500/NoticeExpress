@@ -22,12 +22,12 @@ public class NoticeRepository {
      * Creates a new notice in the database.
      */
     public boolean createNotice(Notice notice) {
-        String sql = "INSERT INTO notices (id, publisher, publisher_uuid, content, timestamp, is_pinned, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO notices (title, publisher, publisher_uuid, content, timestamp, is_pinned, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = databaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setString(1, notice.getId().toString());
+            pstmt.setString(1, notice.getTitle());
             pstmt.setString(2, notice.getPublisher());
             pstmt.setString(3, notice.getPublisherUuid().toString());
             pstmt.setString(4, notice.getContent());
@@ -36,7 +36,14 @@ public class NoticeRepository {
             pstmt.setLong(7, notice.getCreatedAt());
 
             pstmt.executeUpdate();
-            NoticeExpress.LOGGER.info("Notice created: {}", notice.getId());
+            
+            // Get the generated ID
+            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                notice.setId(generatedKeys.getInt(1));
+                NoticeExpress.LOGGER.info("Notice created with ID: {}", notice.getId());
+            }
+            
             return true;
 
         } catch (SQLException e) {
@@ -48,13 +55,13 @@ public class NoticeRepository {
     /**
      * Deletes a notice by its ID.
      */
-    public boolean deleteNotice(UUID id) {
+    public boolean deleteNotice(int id) {
         String sql = "DELETE FROM notices WHERE id = ?";
 
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, id.toString());
+            pstmt.setInt(1, id);
             int affectedRows = pstmt.executeUpdate();
 
             if (affectedRows > 0) {
@@ -74,28 +81,28 @@ public class NoticeRepository {
     /**
      * Pins a notice.
      */
-    public boolean pinNotice(UUID id) {
+    public boolean pinNotice(int id) {
         return updatePinStatus(id, true);
     }
 
     /**
      * Unpins a notice.
      */
-    public boolean unpinNotice(UUID id) {
+    public boolean unpinNotice(int id) {
         return updatePinStatus(id, false);
     }
 
     /**
      * Updates the pin status of a notice.
      */
-    private boolean updatePinStatus(UUID id, boolean pinned) {
+    private boolean updatePinStatus(int id, boolean pinned) {
         String sql = "UPDATE notices SET is_pinned = ? WHERE id = ?";
 
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, pinned ? 1 : 0);
-            pstmt.setString(2, id.toString());
+            pstmt.setInt(2, id);
 
             int affectedRows = pstmt.executeUpdate();
 
@@ -166,13 +173,13 @@ public class NoticeRepository {
     /**
      * Gets a notice by its ID.
      */
-    public Notice getNoticeById(UUID id) {
+    public Notice getNoticeById(int id) {
         String sql = "SELECT * FROM notices WHERE id = ?";
 
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, id.toString());
+            pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
@@ -191,7 +198,8 @@ public class NoticeRepository {
      */
     private Notice mapResultSetToNotice(ResultSet rs) throws SQLException {
         return new Notice(
-                UUID.fromString(rs.getString("id")),
+                rs.getInt("id"),
+                rs.getString("title"),
                 rs.getString("publisher"),
                 UUID.fromString(rs.getString("publisher_uuid")),
                 rs.getString("content"),

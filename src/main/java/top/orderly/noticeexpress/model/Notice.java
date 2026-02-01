@@ -6,7 +6,8 @@ import java.util.UUID;
  * Represents a notice/announcement in the system.
  */
 public class Notice {
-    private UUID id;
+    private int id;
+    private String title;
     private String publisher;
     private UUID publisherUuid;
     private String content;
@@ -15,14 +16,14 @@ public class Notice {
     private long createdAt;
 
     public Notice() {
-        this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.timestamp = this.createdAt;
         this.isPinned = false;
     }
 
-    public Notice(UUID id, String publisher, UUID publisherUuid, String content, long timestamp, boolean isPinned, long createdAt) {
+    public Notice(int id, String title, String publisher, UUID publisherUuid, String content, long timestamp, boolean isPinned, long createdAt) {
         this.id = id;
+        this.title = title;
         this.publisher = publisher;
         this.publisherUuid = publisherUuid;
         this.content = content;
@@ -31,12 +32,20 @@ public class Notice {
         this.createdAt = createdAt;
     }
 
-    public UUID getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(int id) {
         this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getPublisher() {
@@ -91,6 +100,7 @@ public class Notice {
     public String toString() {
         return "Notice{" +
                 "id=" + id +
+                ", title='" + title + '\'' +
                 ", publisher='" + publisher + '\'' +
                 ", publisherUuid=" + publisherUuid +
                 ", content='" + content + '\'' +

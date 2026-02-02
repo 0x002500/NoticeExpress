@@ -1,6 +1,25 @@
 # NoticeExpress
 
-A Minecraft Fabric mod for server announcements and notices with optional client-side GUI enhancement.
+> A Minecraft Fabric mod for server announcements and notices with optional client-side GUI enhancement.
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Commands](#commands)
+- [Chat Display Format](#chat-display-format)
+- [Configuration](#configuration)
+- [Database](#database)
+- [Permissions](#permissions)
+- [Client GUI (Coming Soon)](#client-gui-coming-soon)
+- [For Developers](#for-developers)
+    - [Building from Source](#building-from-source)
+    - [Project Structure](#project-structure)
+    - [API Usage](#api-usage)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+    - [Commit Message Convention](#commit-message-convention)
+- [License](#license)
+
 
 ## Features
 
@@ -239,23 +258,11 @@ long timestamp = System.currentTimeMillis() - 86400000; // Last 24 hours
 List<Notice> recentNotices = NoticeExpress.getNoticeRepository().getNoticesSince(timestamp);
 ```
 
-## Changelog
-
-### Version 1.0.0 (Current)
-- ✅ Initial release
-- ✅ Server-side notice management
-- ✅ SQLite database integration
-- ✅ Chat-based notifications
-- ✅ Permission system
-- ✅ Configuration system
-- ✅ Integer-based notice IDs
-- ✅ Title and content separation
-
-### Upcoming Features
-- 🔜 Client-side GUI
-- 🔜 Network packet communication
-- 🔜 Player join notifications
-- 🔜 Localization support (English & Chinese)
+## Roadmap
+- [ ] Client-side GUI
+- [ ] Network packet communication
+- [ ] Player join notifications
+- [ ] Localization support (English & Chinese)
 
 ## Contributing
 
@@ -282,21 +289,3 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 ## License
 
 This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/0x002500/NoticeExpress/issues) page
-2. Create a new issue if your problem isn't already reported
-3. Provide as much detail as possible (Minecraft version, mod version, error logs, etc.)
-
-## Acknowledgments
-
-- Built with [Fabric](https://fabricmc.net/)
-- Uses [SQLite JDBC](https://github.com/xerial/sqlite-jdbc) for database operations
-- Inspired by various server announcement plugins
-
----
-
-**Made with ❤️ for the Minecraft community**

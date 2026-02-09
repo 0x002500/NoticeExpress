@@ -3,8 +3,7 @@ package top.orderly.noticeexpress.command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import top.orderly.noticeexpress.NoticeExpress;
@@ -73,18 +72,20 @@ public class ListHandler {
         List<Notice> pageNotices = sortedNotices.subList(startIndex, endIndex);
 
         // Display header
-        source.sendFeedback(() -> Text.literal("=== Notices (Page " + page + "/" + totalPages + ") ===")
+        final int finalPage = page;
+        final int finalTotalPages = totalPages;
+        source.sendFeedback(() -> Text.literal("=== Notices (Page " + finalPage + "/" + finalTotalPages + ") ===")
             .formatted(Formatting.GOLD, Formatting.BOLD), false);
 
         // Display notices
         for (Notice notice : pageNotices) {
-            Text noticeText = formatNoticeListItem(notice);
+            MutableText noticeText = formatNoticeListItem(notice);
             source.sendFeedback(() -> noticeText, false);
         }
 
         // Display pagination controls
         if (totalPages > 1) {
-            Text pagination = buildPaginationControls(page, totalPages);
+            MutableText pagination = buildPaginationControls(page, totalPages);
             source.sendFeedback(() -> Text.literal(""), false); // Empty line
             source.sendFeedback(() -> pagination, false);
         }
@@ -96,53 +97,30 @@ public class ListHandler {
      * Formats a single notice for list display.
      * Format: [ID] [Publisher] [Time] [Title] [PINNED]
      */
-    private static Text formatNoticeListItem(Notice notice) {
-        Text idText = Text.literal("[#" + notice.getId() + "] ")
-            .formatted(Formatting.DARK_GRAY);
-
-        Text publisherText = Text.literal(notice.getPublisher() + " ")
-            .formatted(Formatting.AQUA);
-
-        Text timeText = Text.literal(TimeFormatter.format(notice.getTimestamp()) + " ")
-            .formatted(Formatting.GRAY);
-
-        Text titleText = Text.literal(notice.getTitle())
-            .formatted(Formatting.WHITE)
-            .styled(style -> style
-                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/notice show " + notice.getId()))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, 
-                    Text.literal("Click to view full notice").formatted(Formatting.YELLOW))));
-
-        Text result = Text.empty()
-            .append(idText)
-            .append(publisherText)
-            .append(timeText)
-            .append(titleText);
+    private static MutableText formatNoticeListItem(Notice notice) {
+        MutableText result = Text.literal("[#" + notice.getId() + "] ")
+            .formatted(Formatting.DARK_GRAY)
+            .append(Text.literal(notice.getPublisher() + " ").formatted(Formatting.AQUA))
+            .append(Text.literal(TimeFormatter.formatDateTime(notice.getTimestamp()) + " ").formatted(Formatting.GRAY))
+            .append(Text.literal(notice.getTitle()).formatted(Formatting.WHITE));
 
         if (notice.isPinned()) {
-            Text pinnedBadge = Text.literal(" [PINNED]")
-                .formatted(Formatting.GOLD, Formatting.BOLD);
-            result = result.append(pinnedBadge);
+            result.append(Text.literal(" [PINNED]").formatted(Formatting.GOLD, Formatting.BOLD));
         }
 
         return result;
     }
 
     /**
-     * Builds pagination controls with clickable page numbers.
+     * Builds pagination controls with page numbers.
+     * Note: Interactive click events will be added in a future update.
      */
-    private static Text buildPaginationControls(int currentPage, int totalPages) {
-        Text controls = Text.literal("Pages: ").formatted(Formatting.GRAY);
+    private static MutableText buildPaginationControls(int currentPage, int totalPages) {
+        MutableText controls = Text.literal("Pages: ").formatted(Formatting.GRAY);
 
         // Previous button
         if (currentPage > 1) {
-            Text prevButton = Text.literal("[<] ")
-                .formatted(Formatting.AQUA)
-                .styled(style -> style
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/notice list " + (currentPage - 1)))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, 
-                        Text.literal("Previous page").formatted(Formatting.YELLOW))));
-            controls = controls.append(prevButton);
+            controls = controls.append(Text.literal("[<] ").formatted(Formatting.AQUA));
         } else {
             controls = controls.append(Text.literal("[<] ").formatted(Formatting.DARK_GRAY));
         }
@@ -156,25 +134,13 @@ public class ListHandler {
                 controls = controls.append(Text.literal("[" + i + "] ")
                     .formatted(Formatting.GOLD, Formatting.BOLD));
             } else {
-                Text pageButton = Text.literal("[" + i + "] ")
-                    .formatted(Formatting.AQUA)
-                    .styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/notice list " + i))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, 
-                            Text.literal("Go to page " + i).formatted(Formatting.YELLOW))));
-                controls = controls.append(pageButton);
+                controls = controls.append(Text.literal("[" + i + "] ").formatted(Formatting.AQUA));
             }
         }
 
         // Next button
         if (currentPage < totalPages) {
-            Text nextButton = Text.literal("[>]")
-                .formatted(Formatting.AQUA)
-                .styled(style -> style
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/notice list " + (currentPage + 1)))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, 
-                        Text.literal("Next page").formatted(Formatting.YELLOW))));
-            controls = controls.append(nextButton);
+            controls = controls.append(Text.literal("[>]").formatted(Formatting.AQUA));
         } else {
             controls = controls.append(Text.literal("[>]").formatted(Formatting.DARK_GRAY));
         }
